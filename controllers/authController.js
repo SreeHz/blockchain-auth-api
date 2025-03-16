@@ -1,6 +1,37 @@
+import { randomBytes } from 'crypto';
 import { ethers } from 'ethers';
 import Nonce from '../models/Nonce.js';
 import User from '../models/User.js';
+
+/**
+ * Generates a secure random nonce for authentication.
+ */
+export const generateNonce = async (req, res) => {
+    const { userAddress } = req.body;
+
+    if (!userAddress) {
+        return res.status(400).json({ error: 'User address is required' });
+    }
+
+    // Check if the user's public key exists before generating a nonce
+    const user = await User.findOne({ userAddress });
+    if (!user) {
+        return res.status(404).json({ error: 'Public key not registered. Please register first.' });
+    }
+
+    // Generate a secure random nonce
+    const nonce = `0x${randomBytes(32).toString('hex')}`;
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000); // Expires in 3 minutes
+
+    // Store the nonce in MongoDB
+    await Nonce.findOneAndUpdate(
+        { userAddress },
+        { nonce, expiresAt },
+        { upsert: true, new: true }
+    );
+
+    res.status(200).json({ nonce, expiresAt });
+};
 
 /**
  * Verifies the signed nonce for authentication.
