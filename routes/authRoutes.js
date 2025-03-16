@@ -1,9 +1,12 @@
 import express from 'express';
-import { generateNonce } from '../controllers/authController.js';
+import { generateNonce, verifyNonce } from '../controllers/authController.js';
 
 const router = express.Router();
 
-// Endpoint for nonce generation
+// Nonce Generation
 router.post('/generate-nonce', generateNonce);
+
+// Nonce Verification
+router.post('/verify-nonce', verifyNonce);
 
 export default router;

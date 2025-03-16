@@ -1,28 +1,41 @@
-import { randomBytes } from 'crypto';
+import { ethers } from 'ethers';
 import Nonce from '../models/Nonce.js';
 
 /**
- * Generates a secure random nonce and stores it with a short expiry time.
+ * Verifies the signed nonce for authentication.
  */
-export const generateNonce = async (req, res) => {
-    const { userAddress } = req.body;
+export const verifyNonce = async (req, res) => {
+    const { userAddress, signature } = req.body;
 
-    if (!userAddress) {
-        return res.status(400).json({ error: 'User address is required' });
+    if (!userAddress || !signature) {
+        return res.status(400).json({ error: 'User address and signature are required' });
     }
 
-    // Generate a secure random nonce (32-byte hexadecimal string)
-    const nonce = `0x${randomBytes(32).toString('hex')}`;
+    // Fetch the stored nonce for the given address
+    const storedNonce = await Nonce.findOne({ userAddress });
 
-    // Set nonce expiry (e.g., 3 mins)
-    const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+    if (!storedNonce) {
+        return res.status(404).json({ error: 'Nonce not found. Please request a new nonce.' });
+    }
 
-    // Store the nonce in MongoDB
-    await Nonce.findOneAndUpdate(
-        { userAddress },
-        { nonce, expiresAt },
-        { upsert: true, new: true }
-    );
+    // Check if nonce has expired
+    if (new Date() > storedNonce.expiresAt) {
+        return res.status(401).json({ error: 'Nonce expired. Please request a new nonce.' });
+    }
 
-    res.status(200).json({ nonce, expiresAt });
+    // Verify signature
+    try {
+        const recoveredAddress = ethers.verifyMessage(storedNonce.nonce, signature);
+
+        if (recoveredAddress.toLowerCase() !== userAddress.toLowerCase()) {
+            return res.status(401).json({ error: 'Signature verification failed.' });
+        }
+
+        // Successful verification — consider user authenticated
+        res.status(200).json({ message: 'Authentication successful!' });
+
+    } catch (error) {
+        console.error('Signature verification error:', error);
+        res.status(500).json({ error: 'Error verifying signature. Please try again.' });
+    }
 };
