@@ -4,11 +4,11 @@ import crypto from 'crypto';
 /**
  * Logs an authentication attempt in the ledger.
  */
-export const logAuthenticationAttempt = async (userAddress, signature, status) => {
+export const logAuthenticationAttempt = async (userAddress, signature, status, ipAddress, isVPN = false, realIpAddress = null) => {
     try {
         // Create a data string for hashing
         const timestamp = new Date();
-        const dataString = `${userAddress}-${timestamp}-${signature}-${status}`;
+        const dataString = `${userAddress}-${timestamp}-${signature}-${status}-${ipAddress}-${isVPN ? realIpAddress : ''}`;
 
         // Generate SHA-256 hash
         const hash = crypto.createHash('sha256').update(dataString).digest('hex');
@@ -19,6 +19,9 @@ export const logAuthenticationAttempt = async (userAddress, signature, status) =
             signature,
             status,
             timestamp,
+            ipAddress, // Store user IP
+            isVPN, // Store VPN usage
+            realIpAddress, // Store real IP if VPN detected
             hash
         });
 
