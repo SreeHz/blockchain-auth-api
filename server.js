@@ -6,7 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;  // Render assigns PORT automatically
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(express.json());
