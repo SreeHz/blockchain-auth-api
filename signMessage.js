@@ -5,8 +5,8 @@ const require = createRequire(import.meta.url);
 import { ethers } from 'ethers';
 const axios = require('axios'); // Axios requires `require()` in ESM
 
-const PRIVATE_KEY = '0x4f6dd8d8b7d212a30108af3d9d28399478216d019d99335fd4103a8d4616a5a4';  // Replace this
-const USER_ADDRESS = '0x8E7363412fDdeD7970306BCe8bfD4e19665e5f9B';  // Replace this
+const PRIVATE_KEY = '0xa3655a7a6b9539a2489cb5461b44b84eee4cc76b03a92911d11c8c436499b880';  // Replace this
+const USER_ADDRESS = '0x876eB6E4c5F51D341676A472f5557F6836948C4E';  // Replace this
 const API_URL = 'https://blockchain-auth-api.onrender.com/api/auth';    // Update if deployed
 
 const signNonce = async () => {

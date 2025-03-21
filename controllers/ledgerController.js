@@ -6,10 +6,20 @@ import crypto from 'crypto';
  */
 export const logAuthenticationAttempt = async (userAddress, signature, status) => {
     try {
+        // Create a data string for hashing
+        const timestamp = new Date();
+        const dataString = `${userAddress}-${timestamp}-${signature}-${status}`;
+
+        // Generate SHA-256 hash
+        const hash = crypto.createHash('sha256').update(dataString).digest('hex');
+
+        // Create ledger entry with hash
         const ledgerEntry = new Ledger({
             userAddress,
             signature,
-            status
+            status,
+            timestamp,
+            hash
         });
 
         await ledgerEntry.save();
